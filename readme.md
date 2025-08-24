@@ -15,14 +15,6 @@
 | Name 3    | Role 3         |
 | Name 4    | Role 4         |
 
-## 🧑‍💻 Team (Example, nanti hapus aja)
-
-| **Name** | **Role**        |
-|-----------|----------------|
-| John Doe  | Project Manager |
-| Jane Smith| Backend Dev     |
-| Alex Lee  | Frontend Dev    |
-| Maria Kim | UI/UX Designer  |
 
 ---
 
