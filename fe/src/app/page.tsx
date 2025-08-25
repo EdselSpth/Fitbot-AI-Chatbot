@@ -1,103 +1,220 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import type React from "react";
+import './globals.css';
+import { useState, useRef, useEffect } from "react";
+import { Send, Dumbbell, Zap } from "lucide-react";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+export default function FitnessChatbot() {
+  <div className="bg-red-500">Test CSS</div>
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content:
+        "Halo! Saya FitBot, asisten fitness pribadi Anda! 💪 Siap untuk memulai perjalanan fitness yang luar biasa? Tanyakan apa saja tentang workout, nutrisi, atau tips kesehatan!",
+      timestamp: new Date(),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      role: "user",
+      content: input,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      // Placeholder for your FastAPI endpoint
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: input }),
+      });
+      const data = await res.json();
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.answer,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "Maaf, terjadi kesalahan. Silakan coba lagi dalam beberapa saat.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const handlePromptClick = (prompt: string) => {
+    setInput(prompt);
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col h-screen bg-background font-sans text-foreground">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 border-b border-border bg-card shadow-sm">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground">
+          <Dumbbell className="w-5 h-5" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="flex-1">
+          <h1 className="font-bold text-lg text-foreground">FitBot</h1>
+          <p className="text-sm text-muted-foreground">Personal Fitness Assistant</p>
+        </div>
+        <div className="ml-auto">
+          <Zap className="w-5 h-5 text-accent animate-pulse" />
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex gap-3 ${
+              message.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            {message.role === "assistant" && (
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-bold">FB</span>
+              </div>
+            )}
+
+            <div
+              className={`max-w-[80%] p-3 rounded-lg shadow-sm ${
+                message.role === "user"
+                  ? "bg-primary text-primary-foreground ml-auto rounded-br-none"
+                  : "bg-card text-card-foreground rounded-bl-none"
+              }`}
+            >
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              <p
+                className={`text-xs mt-2 opacity-70 ${
+                  message.role === "user"
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {message.timestamp.toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+
+            {message.role === "user" && (
+              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+                <span className="text-accent-foreground text-xs font-bold">YOU</span>
+              </div>
+            )}
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex gap-3 justify-start">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground text-xs font-bold">FB</span>
+            </div>
+            <div className="bg-card text-card-foreground p-3 rounded-lg rounded-bl-none max-w-[80%]">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                </div>
+                <span className="text-sm text-muted-foreground">FitBot sedang mengetik...</span>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 border-t border-border bg-card">
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2 mb-3 max-w-4xl mx-auto">
+          <button
+            onClick={() => handlePromptClick("Buatkan program workout untuk pemula")}
+            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            disabled={isLoading}
+          >
+            💪 Program Workout
+          </button>
+          <button
+            onClick={() => handlePromptClick("Tips diet sehat untuk menurunkan berat badan")}
+            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            disabled={isLoading}
+          >
+            🥗 Tips Diet
+          </button>
+          <button
+            onClick={() => handlePromptClick("Bagaimana cara membangun otot dengan efektif?")}
+            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            disabled={isLoading}
+          >
+            🏋️ Build Muscle
+          </button>
+        </div>
+        <div className="flex gap-2 max-w-4xl mx-auto">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Tanya tentang workout, nutrisi, atau tips fitness..."
+            className="flex-1 min-h-[48px] p-3 rounded-full border border-input bg-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isLoading}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || isLoading}
+            className="inline-flex items-center justify-center rounded-full p-3 transition-colors bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
