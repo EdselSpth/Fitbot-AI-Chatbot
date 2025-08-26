@@ -1,11 +1,13 @@
-"use client";
-import { useState, useRef, useEffect } from "react";
+"use client"
 
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-};
+import type React from "react"
+import { useState, useRef, useEffect } from "react"
+
+interface Message {
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+}
 
 const quickActions = [
   {
@@ -13,14 +15,14 @@ const quickActions = [
     prompt: "Buatkan program workout untuk pemula",
   },
   {
-    label: "🥗 Tips Diet",
-    prompt: "Tips diet sehat untuk menurunkan berat badan",
+    label: "🥗 Nutrisi Sehat",
+    prompt: "Bagaimana nutrisi sehat dasar untuk permulaan fitness?",
   },
   {
     label: "🏋️ Build Muscle",
     prompt: "Bagaimana cara membangun otot dengan efektif?",
   },
-];
+]
 
 export default function FitnessChatbot() {
   const [messages, setMessages] = useState<Message[]>([
@@ -30,137 +32,154 @@ export default function FitnessChatbot() {
         "Halo! Saya FitBot, asisten fitness pribadi Anda! 💪 Siap untuk memulai perjalanan fitness yang luar biasa? Tanyakan apa saja tentang workout, nutrisi, atau tips kesehatan!",
       timestamp: new Date(),
     },
-  ]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  ])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+    scrollToBottom()
+  }, [messages, isLoading])
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
       role: "user",
       content: input,
       timestamp: new Date(),
-    };
+    }
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setIsLoading(true)
 
     try {
       const res = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMessage.content }),
-      });
-      const data = await res.json();
+      })
+      const data = await res.json()
 
       const assistantMessage: Message = {
         role: "assistant",
         content: data.answer,
         timestamp: new Date(),
-      };
+      }
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
       const errorMessage: Message = {
         role: "assistant",
         content: "Maaf, terjadi kesalahan. Silakan coba lagi dalam beberapa saat.",
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      }
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") sendMessage();
-  };
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  }
 
   const handlePromptClick = (prompt: string) => {
-    setInput(prompt);
-  };
+    setInput(prompt)
+    setTimeout(() => sendMessage(), 100)
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center">
-          <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-            <div className="w-3 h-3 bg-gray-900 rounded-full"></div>
-          </div>
+      <div className="flex items-center gap-3 p-4 border-b border-slate-700/50 bg-slate-800/30 backdrop-blur-md">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 shadow-lg">
+          <img
+            src="/assets/gymbot-logo.png"
+            alt="Gym Logo"
+            className="w-full h-full object-cover rounded-full"
+          />
         </div>
-        <div>
-          <div className="font-semibold text-lg text-gray-900">FitBot</div>
-          <div className="text-sm text-gray-500">Your Personal Fitness Assistant</div>
+        <div className="flex-1">
+          <h1 className="font-bold text-xl text-white">FitBot</h1>
+          <p className="text-sm text-slate-300">Your Personal Fitness Assistant</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span className="text-xs text-green-400 font-medium">Online</span>
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex items-start gap-3 ${
-              msg.role === "user" ? "flex-row-reverse" : "flex-row"
-            }`}
-          >
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
-                {msg.role === "assistant" ? (
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 bg-gray-900 rounded-full"></div>
-                  </div>
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-gray-600"></div>
-                )}
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-transparent to-slate-900/20">
+        {messages.map((message, index) => (
+          <div key={index} className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+            {message.role === "assistant" && (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
+                <img
+                  src="/assets/gym_logo.png"
+                  alt="Gym Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
-            </div>
+            )}
 
-            {/* Message Bubble */}
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl text-sm ${
-                msg.role === "user"
-                  ? "bg-teal-400 text-gray-900 rounded-br-md"
-                  : "bg-white text-gray-900 rounded-bl-md shadow-sm border border-gray-100"
+              className={`max-w-[80%] p-4 rounded-2xl shadow-xl backdrop-blur-sm ${
+                message.role === "user"
+                  ? "bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-br-none ml-auto"
+                  : "bg-slate-800/80 text-white border border-slate-700/50 rounded-bl-none"
               }`}
             >
-              {msg.content}
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              <p className={`text-xs mt-2 opacity-70 ${message.role === "user" ? "text-blue-100" : "text-slate-400"}`}>
+                {message.timestamp.toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
             </div>
+
+            {/* User avatar */}
+            {message.role === "user" && (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg ring-2 ring-cyan-500/20">
+                <span className="text-white text-sm font-bold">YOU</span>
+              </div>
+            )}
           </div>
         ))}
 
-        {/* Loading bubble */}
         {isLoading && (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
-                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 bg-gray-900 rounded-full"></div>
-                </div>
-              </div>
+          <div className="flex gap-3 justify-start">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
+              <img
+                  src="/assets/gym_logo.png"
+                  alt="Gym Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
             </div>
-            <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl rounded-bl-md bg-white shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2">
+            <div className="bg-slate-800/80 text-white border border-slate-700/50 p-4 rounded-2xl rounded-bl-none shadow-xl backdrop-blur-sm ring-1 ring-slate-600/20">
+              <div className="flex items-center gap-3">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
-                  <div 
-                    className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" 
-                    style={{ animationDelay: "0.15s" }}
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
                   ></div>
-                  <div 
-                    className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" 
-                    style={{ animationDelay: "0.3s" }}
+                  <div
+                    className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
                   ></div>
                 </div>
-                <span className="text-sm text-gray-500">FitBot sedang mengetik...</span>
+                <span className="text-sm text-slate-300">FitBot sedang mengetik...</span>
               </div>
             </div>
           </div>
@@ -168,52 +187,42 @@ export default function FitnessChatbot() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area + Quick Actions */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4">
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {quickActions.map((act, idx) => (
-            <button
-              key={idx}
-              onClick={() => handlePromptClick(act.prompt)}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full border border-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      {/* Input Area */}
+      <div className="p-4 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-md">
+        <div className="flex flex-col gap-3 max-w-4xl mx-auto">
+          {/* Quick Actions */}
+          <div className="flex gap-2 flex-wrap">
+            {quickActions.map((act, idx) => (
+              <button
+                key={idx}
+                onClick={() => handlePromptClick(act.prompt)}
+                className="px-4 py-2 text-sm bg-slate-700/80 hover:bg-slate-600/80 text-white border border-slate-600/50 rounded-full transition-all duration-200 backdrop-blur-sm shadow-md hover:shadow-lg ring-1 ring-slate-500/20 hover:ring-slate-400/30"
+                disabled={isLoading}
+              >
+                {act.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-3">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Tanya tentang workout, nutrisi, atau tips fitness..."
+              className="flex-1 px-4 py-3 bg-slate-700/80 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm shadow-lg"
               disabled={isLoading}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={!input.trim() || isLoading}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg ring-2 ring-blue-500/20 hover:ring-blue-400/30"
+              aria-label="Kirim"
             >
-              {act.label}
+              <span className="text-lg">🚀</span>
             </button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div className="flex items-center gap-3">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Tanyakan sesuatu..."
-            className="flex-1 px-4 py-3 bg-gray-100 border border-gray-200 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!input.trim() || isLoading}
-            className="p-3 bg-teal-400 hover:bg-teal-500 text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Kirim"
-          >
-            <svg 
-              width="20" 
-              height="20" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              viewBox="0 0 24 24"
-            >
-              <path d="M22 2L11 13" />
-              <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-            </svg>
-          </button>
+          </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
