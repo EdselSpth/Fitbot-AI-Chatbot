@@ -1,18 +1,28 @@
 "use client";
-
-import type React from "react";
-import './globals.css';
 import { useState, useRef, useEffect } from "react";
-import { Send, Dumbbell, Zap } from "lucide-react";
 
-interface Message {
+type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-}
+};
+
+const quickActions = [
+  {
+    label: "💪 Program Workout",
+    prompt: "Buatkan program workout untuk pemula",
+  },
+  {
+    label: "🥗 Tips Diet",
+    prompt: "Tips diet sehat untuk menurunkan berat badan",
+  },
+  {
+    label: "🏋️ Build Muscle",
+    prompt: "Bagaimana cara membangun otot dengan efektif?",
+  },
+];
 
 export default function FitnessChatbot() {
-  <div className="bg-red-500">Test CSS</div>
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -25,13 +35,9 @@ export default function FitnessChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -47,11 +53,10 @@ export default function FitnessChatbot() {
     setIsLoading(true);
 
     try {
-      // Placeholder for your FastAPI endpoint
       const res = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: input }),
+        body: JSON.stringify({ question: userMessage.content }),
       });
       const data = await res.json();
 
@@ -74,11 +79,8 @@ export default function FitnessChatbot() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") sendMessage();
   };
 
   const handlePromptClick = (prompt: string) => {
@@ -86,84 +88,79 @@ export default function FitnessChatbot() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background font-sans text-foreground">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card shadow-sm">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground">
-          <Dumbbell className="w-5 h-5" />
+      <div className="flex items-center gap-4 px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+        <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+            <div className="w-3 h-3 bg-gray-900 rounded-full"></div>
+          </div>
         </div>
-        <div className="flex-1">
-          <h1 className="font-bold text-lg text-foreground">FitBot</h1>
-          <p className="text-sm text-muted-foreground">Personal Fitness Assistant</p>
-        </div>
-        <div className="ml-auto">
-          <Zap className="w-5 h-5 text-accent animate-pulse" />
+        <div>
+          <div className="font-semibold text-lg text-gray-900">FitBot</div>
+          <div className="text-sm text-gray-500">Your Personal Fitness Assistant</div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+        {messages.map((msg, idx) => (
           <div
-            key={index}
-            className={`flex gap-3 ${
-              message.role === "user" ? "justify-end" : "justify-start"
+            key={idx}
+            className={`flex items-start gap-3 ${
+              msg.role === "user" ? "flex-row-reverse" : "flex-row"
             }`}
           >
-            {message.role === "assistant" && (
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground text-xs font-bold">FB</span>
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
+                {msg.role === "assistant" ? (
+                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                    <div className="w-2.5 h-2.5 bg-gray-900 rounded-full"></div>
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-gray-600"></div>
+                )}
               </div>
-            )}
+            </div>
 
+            {/* Message Bubble */}
             <div
-              className={`max-w-[80%] p-3 rounded-lg shadow-sm ${
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground ml-auto rounded-br-none"
-                  : "bg-card text-card-foreground rounded-bl-none"
+              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl text-sm ${
+                msg.role === "user"
+                  ? "bg-teal-400 text-gray-900 rounded-br-md"
+                  : "bg-white text-gray-900 rounded-bl-md shadow-sm border border-gray-100"
               }`}
             >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-              <p
-                className={`text-xs mt-2 opacity-70 ${
-                  message.role === "user"
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {message.timestamp.toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              {msg.content}
             </div>
-
-            {message.role === "user" && (
-              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground text-xs font-bold">YOU</span>
-              </div>
-            )}
           </div>
         ))}
+
+        {/* Loading bubble */}
         {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-xs font-bold">FB</span>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 bg-gray-900 rounded-full"></div>
+                </div>
+              </div>
             </div>
-            <div className="bg-card text-card-foreground p-3 rounded-lg rounded-bl-none max-w-[80%]">
+            <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl rounded-bl-md bg-white shadow-sm border border-gray-100">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
+                  <div 
+                    className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" 
+                    style={{ animationDelay: "0.15s" }}
                   ></div>
-                  <div
-                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
+                  <div 
+                    className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" 
+                    style={{ animationDelay: "0.3s" }}
                   ></div>
                 </div>
-                <span className="text-sm text-muted-foreground">FitBot sedang mengetik...</span>
+                <span className="text-sm text-gray-500">FitBot sedang mengetik...</span>
               </div>
             </div>
           </div>
@@ -171,47 +168,49 @@ export default function FitnessChatbot() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-border bg-card">
+      {/* Input Area + Quick Actions */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4">
         {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2 mb-3 max-w-4xl mx-auto">
-          <button
-            onClick={() => handlePromptClick("Buatkan program workout untuk pemula")}
-            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            disabled={isLoading}
-          >
-            💪 Program Workout
-          </button>
-          <button
-            onClick={() => handlePromptClick("Tips diet sehat untuk menurunkan berat badan")}
-            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            disabled={isLoading}
-          >
-            🥗 Tips Diet
-          </button>
-          <button
-            onClick={() => handlePromptClick("Bagaimana cara membangun otot dengan efektif?")}
-            className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            disabled={isLoading}
-          >
-            🏋️ Build Muscle
-          </button>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {quickActions.map((act, idx) => (
+            <button
+              key={idx}
+              onClick={() => handlePromptClick(act.prompt)}
+              className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full border border-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+            >
+              {act.label}
+            </button>
+          ))}
         </div>
-        <div className="flex gap-2 max-w-4xl mx-auto">
+
+        {/* Input */}
+        <div className="flex items-center gap-3">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Tanya tentang workout, nutrisi, atau tips fitness..."
-            className="flex-1 min-h-[48px] p-3 rounded-full border border-input bg-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            onKeyDown={handleKeyPress}
+            placeholder="Tanyakan sesuatu..."
+            className="flex-1 px-4 py-3 bg-gray-100 border border-gray-200 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
-            className="inline-flex items-center justify-center rounded-full p-3 transition-colors bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="p-3 bg-teal-400 hover:bg-teal-500 text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Kirim"
           >
-            <Send className="w-5 h-5" />
+            <svg 
+              width="20" 
+              height="20" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              viewBox="0 0 24 24"
+            >
+              <path d="M22 2L11 13" />
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+            </svg>
           </button>
         </div>
       </div>
