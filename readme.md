@@ -65,7 +65,7 @@ npm install
 npm run dev
 ```
 
-### Step 5 Buka localHost:3000 di browser
+### Step 4 Buka localHost:3000 di browser
 
 
 ## 📋 Requirements (optional)
