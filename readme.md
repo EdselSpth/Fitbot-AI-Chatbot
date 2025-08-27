@@ -1,19 +1,17 @@
 
-# `Project Title`
+# `FITBOT - Your Personal Fitness Assistant`
 
 **Description**  
-(Tuliskan penjelasan ringkas tentang apa project ini beserta tujuannya)
-
----
+FitBot adalah asisten fitness personal kamu berbasis artificial inteligence yang dirancang untuk menjadi teman andalan kamu untuk merawat kesehatan dan kebugaran dirimu. Dapatkan program latihan yang disesuaikan dengan kondisi tubuhmu, tips nutrisi berbasis sains, dan semua jawaban dari pertanyaan kamu mengenai fitness. FitBot siap membantumu berlatih lebih cerdas dan mencapai targetmu lebih cepat
 
 ## 🧑‍💻 Team
 
-| **Name** | **Role**        |
-|-----------|----------------|
-| Name 1    | Role 1         |
-| Name 2    | Role 2         |
-| Name 3    | Role 3         |
-| Name 4    | Role 4         |
+| **Name**                   | **Role**               |
+|--------------------------- |------------------------|
+| Edsel Septa Haryanto       | Backend [Api Engineer] |
+| Falah Razan Hibrizi        | Frontend               |
+| Farhan Hamzah              | Backend [AI Engineer]  |
+| Fazari Razka Davira        | Frontend UI/UX Design  |
 
 
 ---
@@ -31,14 +29,16 @@
 ## 🛠 Tech Stack
 
 **Frontend:**
-- ...
-- ...
-- ...
+- Bahasa Pemrograman : Typescript
+- Framework : Next.js dengan react
+- Styling : Tailwind CSS
+- Markdown Renderer : React Markdown
 
 **Backend:**
-- ...
-- ...
-- ...
+- Bahasa Pemrograman : Python
+- Framework : FastAPI
+- API : Google AI Gemini
+- Validasi Data : Pydantic
 
 ---
 
