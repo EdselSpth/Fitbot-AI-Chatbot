@@ -68,7 +68,9 @@ npm run dev
 
 ### Step 4 Buka localhost:3000 di browser
 
-
 ## 📋 Requirements (optional)
 - Node.js versi 18.18 atau lebih baru.
 - Python versi 3.10 atau lebih baru.
+
+## Video Demo
+[![<Teks Alt>](https://img.youtube.com/vi/FLGonXn21D8/0.jpg)](https://www.youtube.com/watch?v=FLGonXn21D8)
