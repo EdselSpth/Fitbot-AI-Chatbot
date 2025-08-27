@@ -2,8 +2,10 @@
 # `FITBOT - Your Personal Fitness Assistant`
 
 **Description**  
-FitBot adalah asisten fitness personal kamu berbasis artificial intelligence yang dirancang untuk menjadi teman andalan kamu untuk merawat kesehatan dan kebugaran dirimu. Dapatkan program latihan yang disesuaikan dengan kondisi tubuhmu, tips nutrisi berbasis sains, dan semua jawaban dari pertanyaan kamu mengenai fitness. Sebagai bagian dari misi "AI for Good Health & Well-being" sesuai tujuan SDGs, FitBot siap membantumu berlatih lebih cerdas dan mencapai targetmu lebih cepat.
+FitBot adalah asisten fitness personal berbasis artificial intelligence yang dirancang untuk menjadi teman andalanmu. Mendukung misi SDGs "AI for Good Health and Well-being," FitBot fokus pada sisi kebugaran melalui fitness dengan menyediakan program latihan yang disesuaikan, tips nutrisi berbasis sains, dan semua jawaban dari pertanyaan kamu. FitBot siap membantumu berlatih lebih cerdas dan mencapai targetmu lebih cepat.
 
+**Theme** 
+AI for Good Health and Well-being
 
 ## 🧑‍💻 Team
 
