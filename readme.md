@@ -46,18 +46,28 @@ FitBot adalah asisten fitness personal kamu berbasis artificial inteligence yang
 
 ### Step 1. Clone the Repository
 ```bash
-git clone https://github.com/your-github-username/your-repo.git
-cd your-repo
+git clone https://github.com/EdselSpth/bootcamp-task-1.git
+cd bootcamp-task-1
 ```
 
-### Step 2. ...
-...
 
-### Step 3 ...
-...
+### Step 2 Run API Backend pada Python di Terminal Baru
+```bash
+cd bootcamp-task-1
+cd google
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Step 3 Run Frontend di Terminal Baru
+```bash
+cd fe
+npm install
+npm run dev
+```
+
+### Step 5 Buka localHost:3000 di browser
 
 
 ## 📋 Requirements (optional)
-- Node.js versi ...
-- Python versi ...
-- ...
+- Node.js versi 18.18 atau lebih baru.
+- Python versi 3.10 atau lebih baru.
