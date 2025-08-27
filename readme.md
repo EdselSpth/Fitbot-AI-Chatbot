@@ -17,13 +17,11 @@ FitBot adalah asisten fitness personal kamu berbasis artificial inteligence yang
 ---
 
 ## 🚀 Features
-- **🔐 Lorem Ipsum Authentication**: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.
-- **🤖 AI Lorem Ipsum Generator**: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.
-- **♿ Accessibility Ipsum**: Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-- **📄 Document Parsing Lorem**: Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.
-- **🎯 Intelligent Matching Lorem**: Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
-- **📊 Adaptive Ipsum Levels**: Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia.
-- **🌐 Decentralized Lorem Frontend**: Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.
+- **🤖 Generator Program Latihan AI (Gemini AI)**: Rancang program latihan sesuai kondisi tubuh, tujuan kebugaran, dan preferensi pengguna dengan dukungan Google Gemini API.
+- **🥗 Saran Nutrisi Cerdas**: Memberikan rekomendasi pola makan sehat yang disesuaikan dengan profil pengguna, seperti kebutuhan kalori harian dan preferensi diet.
+- **📊 Tingkat Kesulitan Latihan yang Adaptif**: Menyesuaikan intensitas latihan secara otomatis berdasarkan progres dan feedback pengguna, sehingga program tetap menantang namun aman.
+- **🎯 Pencocokan Program Latihan Cerdas**: Menawarkan latihan alternatif serupa jika peralatan tertentu tidak tersedia atau jika pengguna memiliki batasan fisik.
+- **🌐 Aksesibilitas UI**: Antarmuka yang mudah diakses (accessible design), mendukung navigasi keyboard dan screen reader, serta memiliki kontras warna yang optimal.
 
 
 ## 🛠 Tech Stack
