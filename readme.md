@@ -73,5 +73,7 @@ npm run dev
 - Node.js versi 18.18 atau lebih baru.
 - Python versi 3.10 atau lebih baru.
 
-## Video Demo
+## Video Demo Tugas 1
 [![<Teks Alt>](https://img.youtube.com/vi/FLGonXn21D8/0.jpg)](https://www.youtube.com/watch?v=FLGonXn21D8)
+
+## Video Demo Tugas 2
