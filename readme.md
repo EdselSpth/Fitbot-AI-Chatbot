@@ -25,6 +25,7 @@ AI for Good Health and Well-being
 - **📊 Tingkat Kesulitan Latihan yang Adaptif**: Menyesuaikan intensitas latihan secara otomatis berdasarkan progres dan feedback pengguna, sehingga program tetap menantang namun aman.
 - **🎯 Pencocokan Program Latihan Cerdas**: Menawarkan latihan alternatif serupa jika peralatan tertentu tidak tersedia atau jika pengguna memiliki batasan fisik.
 - **🌐 Aksesibilitas UI**: Antarmuka yang mudah diakses (accessible design), mendukung navigasi keyboard dan screen reader, serta memiliki kontras warna yang optimal.
+- **📆 Buat jadwal latihan di google kalender**: Memudahkan pengguna untuk menjadwalkan latihan fitness dengan integrasi langsung dengan google calendar
 
 
 ## 🛠 Tech Stack
