@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import ReactMarkdown from "react-markdown"
+import rehypeRaw from 'rehype-raw';
 
 interface Message {
   role: "user" | "assistant"
@@ -127,6 +128,14 @@ export default function FitnessChatbot() {
       }
   };
 
+  const markdownComponents = {
+    h3: ({ children }: any) => <div className="text-xl font-bold mt-1 mb-2">{children}</div>,
+    p: ({ children }: any) => <p className="leading-relaxed mb-2">{children}</p>,
+    ul: ({ children }: any) => <ul className="list-disc inside space-y-2 mb-4 ml-6">{children}</ul>,
+    li: ({ children }: any) => <li className="leading-snug">{children}</li>,
+    strong: ({ children }: any) => <strong className="font-semibold">{children}</strong>,
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       <div className="flex items-center gap-3 p-4 border-b border-slate-700/50 bg-slate-800/30 backdrop-blur-md">
@@ -160,7 +169,7 @@ export default function FitnessChatbot() {
             )}
             <div className={`max-w-[80%] p-4 rounded-2xl shadow-xl backdrop-blur-sm ${message.role === "user" ? "bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-br-none ml-auto" : "bg-slate-800/80 text-white border border-slate-700/50 rounded-bl-none"}`}>
               <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+                <ReactMarkdown rehypePlugins={[rehypeRaw]} components={markdownComponents}>{message.content}</ReactMarkdown>
               </div>
               <p className={`text-xs mt-2 opacity-70 ${message.role === "user" ? "text-blue-100" : "text-slate-400"}`}>
                 {message.timestamp.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
