@@ -49,7 +49,6 @@ AI for Good Health and Well-being
 ### Step 1. Clone the Repository
 ```bash
 git clone https://github.com/EdselSpth/bootcamp-task-1.git
-cd bootcamp-task-1
 ```
 
 
@@ -62,6 +61,7 @@ python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ### Step 3 Run Frontend di Terminal Baru
 ```bash
+cd bootcamp-task-1
 cd fe
 npm install
 npm run dev
