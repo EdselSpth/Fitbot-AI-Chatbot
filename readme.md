@@ -71,7 +71,7 @@ npm run dev
 
 ### Login Authentikasi Google dengan Akun berikut
 ```bash
-email : edselspth@gmail.com
+email : devtestingedsel@gmail.com
 password : DevTesting130904
 ```
 
