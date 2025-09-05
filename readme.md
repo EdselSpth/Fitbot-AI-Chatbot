@@ -69,6 +69,12 @@ npm run dev
 
 ### Step 4 Buka localhost:3000 di browser
 
+### Login Authentikasi Google dengan Akun berikut
+```bash
+email : edselspth@gmail.com
+password : DevTesting130904
+```
+
 ## 📋 Requirements (optional)
 - Node.js versi 18.18 atau lebih baru.
 - Python versi 3.10 atau lebih baru.
