@@ -48,7 +48,7 @@ AI for Good Health and Well-being
 
 ### Step 1. Clone the Repository
 ```bash
-git clone https://github.com/EdselSpth/bootcamp-task-1.git
+git clone https://github.com/EdselSpth/Fitbot-AI-Chatbot.git
 ```
 
 
