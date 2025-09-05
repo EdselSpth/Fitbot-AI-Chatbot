@@ -54,14 +54,14 @@ git clone https://github.com/EdselSpth/Fitbot-AI-Chatbot.git
 
 ### Step 2 Run API Backend pada Python di Terminal Baru
 ```bash
-cd bootcamp-task-1
+cd Fitbot-AI-Chatbot
 cd google
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Step 3 Run Frontend di Terminal Baru
 ```bash
-cd bootcamp-task-1
+cd Fitbot-AI-Chatbot
 cd fe
 npm install
 npm run dev
