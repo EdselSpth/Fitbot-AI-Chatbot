@@ -56,6 +56,7 @@ git clone https://github.com/EdselSpth/Fitbot-AI-Chatbot.git
 ```bash
 cd Fitbot-AI-Chatbot
 cd google
+pip install -r requirements.txt
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
