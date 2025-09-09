@@ -1,3 +1,13 @@
-fastapi==0.116.1
-pydantic==2.11.7
-Requests==2.32.5
+requests
+fastapi
+uvicorn
+pydantic
+google-auth
+google-auth-oauthlib
+google-api-python-client
+langchain
+langchain-community
+langchain-huggingface
+faiss-cpu
+pypdf
+sentence-transformers
