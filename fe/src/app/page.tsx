@@ -28,6 +28,7 @@ export default function FitnessChatbot() {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [useRAG, setUseRAG] = useState(false) // State for RAG toggle
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -80,7 +81,7 @@ export default function FitnessChatbot() {
       const res = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userMessage.content }),
+        body: JSON.stringify({ question: userMessage.content, use_rag: useRAG }),
       })
       const data = await res.json()
 
@@ -103,7 +104,7 @@ export default function FitnessChatbot() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -211,8 +212,23 @@ export default function FitnessChatbot() {
               </button>
             ))}
           </div>
-          <div className="flex gap-3">
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} placeholder="Tanya tentang workout, nutrisi, atau tips fitness..." className="flex-1 px-4 py-3 bg-slate-700/80 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm shadow-lg disabled:opacity-50" disabled={isLoading} />
+          <div className="flex gap-3 items-start">
+            <button 
+              onClick={() => setUseRAG(!useRAG)}
+              className={`px-4 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg ring-2 ${useRAG ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white ring-purple-500/30' : 'bg-slate-700/80 hover:bg-slate-600/80 text-slate-300 ring-slate-600/50'}`}
+              aria-label="Toggle RAG"
+            >
+              {useRAG ? "RAG: ON" : "RAG: OFF"}
+            </button>
+            <textarea 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={handleKeyPress} 
+              placeholder="Tanya tentang workout, nutrisi, atau tips fitness..." 
+              className="flex-1 px-4 py-3 bg-slate-700/80 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm shadow-lg disabled:opacity-50 resize-none"
+              disabled={isLoading} 
+              rows={1}
+            />
             <button onClick={() => sendMessage()} disabled={!input.trim() || isLoading} className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg ring-2 ring-blue-500/20 hover:ring-blue-400/30" aria-label="Kirim">
               <span className="text-lg">🚀</span>
             </button>
