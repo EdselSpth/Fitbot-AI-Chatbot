@@ -86,3 +86,6 @@ password : DevTesting130904
 
 ## Video Demo Tugas 2
 [![Video Demo Enhanced FitBot](https://img.youtube.com/vi/anXcXKllBnY/0.jpg)](https://www.youtube.com/watch?v=anXcXKllBnY)
+
+## Video Demo Tugas 3
+[![Video Demo Enhanced FitBot](https://img.youtube.com/vi/X1tAmENjQ5w/0.jpg)](https://www.youtube.com/watch?v=X1tAmENjQ5w)
