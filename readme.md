@@ -11,10 +11,10 @@ AI for Good Health and Well-being
 
 | **Name**                   | **Role**               |
 |--------------------------- |------------------------|
-| Edsel Septa Haryanto       | Backend [Api Engineer] |
+| Edsel Septa Haryanto       | Backend                |
 | Falah Razan Hibrizi        | Frontend               |
-| Farhan Hamzah              | Backend [AI Engineer]  |
-| Fazari Razka Davira        | Frontend UI/UX Design  |
+| Farhan Hamzah              | Backend                |
+| Fazari Razka Davira        | Frontend               |
 
 
 ---
@@ -26,6 +26,7 @@ AI for Good Health and Well-being
 - **🎯 Pencocokan Program Latihan Cerdas**: Menawarkan latihan alternatif serupa jika peralatan tertentu tidak tersedia atau jika pengguna memiliki batasan fisik.
 - **🌐 Aksesibilitas UI**: Antarmuka yang mudah diakses (accessible design), mendukung navigasi keyboard dan screen reader, serta memiliki kontras warna yang optimal.
 - **📆 Buat jadwal latihan di google kalender**: Memudahkan pengguna untuk menjadwalkan latihan fitness dengan integrasi langsung dengan google calendar
+- **⚙️ Pencarian lebih faktual dan kredibel**: Dengan implementasi Retrieval-augmented generation chatbot memiliki kemampuan mempelajari jurnal-jurnal pilihan untuk memberikan jawaban yang berdasarkan fakta
 
 
 ## 🛠 Tech Stack
@@ -85,3 +86,6 @@ password : DevTesting130904
 
 ## Video Demo Tugas 2
 [![Video Demo Enhanced FitBot](https://img.youtube.com/vi/anXcXKllBnY/0.jpg)](https://www.youtube.com/watch?v=anXcXKllBnY)
+
+## Video Demo Tugas 3
+[![Video Demo Enhanced FitBot](https://img.youtube.com/vi/X1tAmENjQ5w/0.jpg)](https://www.youtube.com/watch?v=X1tAmENjQ5w)
