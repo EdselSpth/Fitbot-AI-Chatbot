@@ -15,7 +15,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 import logging
 from pathlib import Path
-
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 # LangChain imports
 try:
     from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
@@ -42,6 +42,18 @@ def get_api_key_from_file():
         return None
 
 # RAG TOOLS CLASS
+# RAG TOOLS CLASS (PERBAIKAN)
+# LangChain imports (tambahkan TextSplitter)
+try:
+    from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+    from langchain_huggingface import HuggingFaceEmbeddings
+    from langchain_community.vectorstores import FAISS
+    from langchain.schema import Document
+    from langchain.text_splitter import RecursiveCharacterTextSplitter # <-- TAMBAHKAN IMPORT INI
+except ImportError:
+    print("⚠️ LangChain/FAISS/HuggingFace tidak terinstal. Pastikan Anda sudah menjalankan: pip install langchain langchain-community langchain-huggingface faiss-cpu pypdf sentence-transformers")
+    exit(1)
+
 class FitbotRAGSystem:
     def __init__(self, pdf_directory: str, vector_store_path: str, gemini_api_key: str, embedding_model: str):
         self.pdf_directory = Path(pdf_directory)
@@ -56,18 +68,18 @@ class FitbotRAGSystem:
 
     def _initialize_embeddings(self):
         try:
-            logger.info(f"📦 Loading embedding model: {self.embedding_model_name}...")
+            logger.info(f"📦 Memuat model embedding: {self.embedding_model_name}...")
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=self.embedding_model_name,
                 model_kwargs={'device': 'cpu'}
             )
-            logger.info("✅ Embedding model loaded successfully.")
+            logger.info("✅ Model embedding berhasil dimuat.")
         except Exception as e:
-            logger.error(f"❌ Failed to load embedding model: {e}")
+            logger.error(f"❌ Gagal memuat model embedding: {e}")
 
     def initialize_system(self, force_recreate: bool = False):
         if not self.embeddings:
-            logger.error("❌ Cannot initialize vector store without embeddings.")
+            logger.error("❌ Tidak dapat menginisialisasi vector store tanpa embeddings.")
             return
         try:
             vector_store_exists = (self.vector_store_path / "index.faiss").exists()
@@ -76,14 +88,20 @@ class FitbotRAGSystem:
             else:
                 self._load_vector_store()
         except Exception as e:
-            logger.error(f"❌ Failed to initialize RAG system: {e}")
+            logger.error(f"❌ Gagal menginisialisasi sistem RAG: {e}")
             self.is_initialized = False
 
     def _create_vector_store(self):
-        logger.info("🔄 Creating new vector store...")
+        """
+        [DIUBAH] Fungsi ini sekarang memecah dokumen PDF menjadi potongan-potongan kecil (chunks)
+        untuk meningkatkan akurasi pencarian.
+        """
+        logger.info("🔄 Membuat vector store baru...")
         if not self.pdf_directory.exists():
-            logger.warning(f"📁 PDF directory not found: {self.pdf_directory}")
+            logger.warning(f"📁 Direktori PDF tidak ditemukan: {self.pdf_directory}")
             return
+
+        # 1. Tetap memuat semua file PDF dari direktori
         loader = DirectoryLoader(
             str(self.pdf_directory),
             glob="**/*.pdf",
@@ -92,45 +110,56 @@ class FitbotRAGSystem:
         )
         documents = loader.load()
         if not documents:
-            logger.warning("📁 No PDF documents found.")
+            logger.warning("📁 Tidak ada dokumen PDF yang ditemukan.")
             return
-        logger.info(f"📚 Loaded {len(documents)} document pages.")
-        self.vector_store = FAISS.from_documents(documents, self.embeddings)
+        logger.info(f"📚 {len(documents)} halaman dokumen berhasil dimuat.")
+
+        # 2. [BARU] Pecah dokumen menjadi chunks yang lebih kecil
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        docs = text_splitter.split_documents(documents)
+        if not docs:
+            logger.warning(" Gagal memecah dokumen menjadi chunks.")
+            return
+        logger.info(f"📄 Dokumen dipecah menjadi {len(docs)} potongan teks (chunks).")
+
+        # 3. Buat vector store dari chunks, bukan dari dokumen utuh
+        self.vector_store = FAISS.from_documents(docs, self.embeddings)
         self.vector_store.save_local(str(self.vector_store_path))
-        logger.info(f"💾 Vector store saved to {self.vector_store_path}")
+        logger.info(f"💾 Vector store berhasil disimpan di {self.vector_store_path}")
         self.is_initialized = True
 
+
     def _load_vector_store(self):
-        logger.info("📂 Loading existing vector store...")
+        logger.info("📂 Memuat vector store yang sudah ada...")
         try:
             self.vector_store = FAISS.load_local(
-                str(self.vector_store_path), 
+                str(self.vector_store_path),
                 self.embeddings,
                 allow_dangerous_deserialization=True
             )
-            logger.info("✅ Vector store loaded successfully")
+            logger.info("✅ Vector store berhasil dimuat")
             self.is_initialized = True
         except Exception as e:
-            logger.error(f"❌ Error loading vector store: {e}. Attempting to recreate.")
+            logger.error(f"❌ Gagal memuat vector store: {e}. Mencoba membuat ulang.")
             self._create_vector_store()
 
     def query_with_rag(self, question: str, k: int = 3) -> Dict[str, Any]:
         if not self.is_initialized or not self.vector_store:
             return {"answer": "Sistem RAG belum siap.", "sources": []}
-        
+
         docs = self.vector_store.similarity_search(question, k=k)
         if not docs:
             return {"answer": "Tidak ditemukan dokumen yang relevan.", "sources": []}
-            
+
         context = "\n\n".join([doc.page_content for doc in docs])
         prompt = f"""
         Berdasarkan konteks dokumen ilmiah berikut, jawab pertanyaan user.
-        
+
         KONTEKS:
         {context}
-        
+
         PERTANYAAN: {question}
-        
+
         INSTRUKSI:
         1. Jawab HANYA berdasarkan informasi dari konteks yang diberikan.
         2. Jika informasi tidak ada di konteks, katakan "Informasi tidak tersedia dalam dokumen rujukan saya".
