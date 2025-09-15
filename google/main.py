@@ -226,6 +226,151 @@ class GoogleCalendarTools:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+# GOOGLE FIT TOOLS CLASS (BARU)
+class GoogleFitTools:
+    def __init__(self, credentials_file='client_secret.json', token_file='fit_token.pickle'):
+        # Inisialisasi dengan scope khusus untuk membaca data aktivitas Google Fit.
+        self.SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
+        self.credentials_file = credentials_file
+        self.token_file = token_file
+        self.service = None
+        self.credentials = None
+        self.initialize_service()
+
+    def get_flow(self):
+        # Membuat dan mengembalikan instance Flow untuk proses otorisasi OAuth2.
+        # Redirect URI diatur ke endpoint callback khusus untuk Google Fit.
+        return Flow.from_client_secrets_file(
+            self.credentials_file,
+            scopes=self.SCOPES,
+            redirect_uri='http://localhost:8000/auth/fit/callback'
+        )
+
+    def initialize_service(self):
+        # Memuat kredensial dari file jika ada dan menginisialisasi service Google Fit.
+        creds = None
+        if os.path.exists(self.token_file):
+            with open(self.token_file, 'rb') as token:
+                creds = pickle.load(token)
+        
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                try:
+                    creds.refresh(Request())
+                    with open(self.token_file, 'wb') as token:
+                        pickle.dump(creds, token)
+                except Exception as e:
+                    logger.error(f"Token Google Fit refresh failed: {e}")
+                    self.service = None
+                    self.credentials = None
+                    return
+            else:
+                self.service = None
+                self.credentials = None
+                return
+        
+        try:
+            self.service = build('fitness', 'v1', credentials=creds)
+            self.credentials = creds
+            logger.info("✅ Google Fit service initialized")
+        except Exception as e:
+            logger.error(f"❌ Error initializing Google Fit: {e}")
+            self.service = None
+            self.credentials = None
+
+    def get_daily_step_count(self) -> int:
+        # Fungsi untuk mengambil total langkah harian dari Google Fit API.
+        if not self.service:
+            logger.warning("Google Fit service not available.")
+            return 0
+
+        # Menentukan rentang waktu: dari awal hari ini sampai sekarang.
+        today = datetime.now().date()
+        start_time = datetime.combine(today, datetime.min.time())
+        end_time = datetime.now()
+        
+        start_time_ns = int(start_time.timestamp() * 1e9)
+        end_time_ns = int(end_time.timestamp() * 1e9)
+
+        dataset_id = f"{start_time_ns}-{end_time_ns}"
+        
+        try:
+            # Memanggil API untuk mendapatkan data langkah.
+            response = self.service.users().dataSources().datasets().get(
+                userId='me',
+                dataSourceId='derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
+                datasetId=dataset_id
+            ).execute()
+            
+            # Mengakumulasi total langkah dari semua data point yang diterima.
+            steps = 0
+            if 'point' in response:
+                for point in response['point']:
+                    for value in point['value']:
+                        steps += value.get('intVal', 0)
+            
+            logger.info(f"✅ Successfully fetched steps: {steps}")
+            return steps
+        except Exception as e:
+            logger.error(f"❌ Could not fetch steps from Google Fit: {e}")
+            return 0
+
+# Penambahan fungsi tool untuk Gemini seperti yang diminta.
+# NOTE: Dalam arsitektur saat ini, pemanggilan tool tidak dilakukan secara langsung
+# oleh Gemini, melainkan oleh aplikasi setelah mem-parsing respons.
+# Fungsi ini disediakan untuk mengikuti permintaan dan untuk potensi penggunaan di masa depan.
+def get_daily_step_count(credentials_json: str) -> int:
+    """
+    Mengambil total langkah harian pengguna dari Google Fit API menggunakan kredensial yang diberikan.
+
+    Args:
+        credentials_json: String JSON dari kredensial OAuth 2.0 pengguna.
+
+    Returns:
+        Jumlah langkah sebagai integer.
+    """
+    try:
+        # Membangun kredensial dari string JSON
+        creds_data = json.loads(credentials_json)
+        credentials = Credentials.from_authorized_user_info(creds_data)
+
+        # Membangun layanan Google Fit API
+        fit_service = build('fitness', 'v1', credentials=credentials)
+
+        # Menentukan rentang waktu untuk hari ini
+        today = datetime.now().date()
+        start_time = datetime.combine(today, datetime.min.time())
+        end_time = datetime.now()
+        start_time_ns = int(start_time.timestamp() * 1e9)
+        end_time_ns = int(end_time.timestamp() * 1e9)
+        dataset_id = f"{start_time_ns}-{end_time_ns}"
+
+        # Mengambil data langkah
+        response = fit_service.users().dataSources().datasets().get(
+            userId='me',
+            dataSourceId='derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
+            datasetId=dataset_id
+        ).execute()
+
+        # Menghitung total langkah
+        steps = sum(
+            value.get('intVal', 0)
+            for point in response.get('point', [])
+            for value in point.get('value', [])
+        )
+        return steps
+    except Exception as e:
+        print(f"Error getting step count: {e}")
+        return 0
+
+# Untuk menambahkan tool ini ke model Gemini (jika menggunakan daftar tools):
+# from google.generativeai.functions import Tool
+# tools = [
+#     Tool(function=get_daily_step_count),
+#     # ... tools lainnya
+# ]
+
+
 # ENHANCED FITBOT CLASS
 class EnhancedFitBot:
     def __init__(self, api_key, credentials_file='client_secret.json'):
@@ -235,6 +380,10 @@ class EnhancedFitBot:
         
         logger.info("🔧 Initializing Google Calendar Tools...")
         self.calendar_tools = GoogleCalendarTools(credentials_file)
+
+        # Tambahan: Inisialisasi Google Fit Tools
+        logger.info("🔧 Initializing Google Fit Tools...")
+        self.fit_tools = GoogleFitTools(credentials_file)
         
         logger.info("📚 Initializing RAG System...")
         pdf_dir = Path(__file__).parent.parent / "Dokumen Training"
@@ -255,6 +404,9 @@ class EnhancedFitBot:
 
         TOPIK YANG DIIJINKAN: latihan gym, program, recovery/istirahat, jadwal, nutrisi fitness, penjadwalan kalender.
         TOPIK DITOLAK: diagnosis medis/terapi, keluhan penyakit, topik non-fitness. Jawab singkat menolak dan arahkan ke topik fitness.
+
+        KEMAMPUAN TAMBAHAN:
+        - Kamu memiliki akses ke data langkah harian pengguna dari Google Fit. Gunakan informasi ini untuk memberikan saran yang lebih personal jika relevan.
 
         STRUKTUR OUTPUT WAJIB (Markdown):
         1) ### Ringkas — 2–3 kalimat inti jawaban.
@@ -291,25 +443,50 @@ class EnhancedFitBot:
             return None
         return None
 
+    # Di dalam kelas EnhancedFitBot
+
     def chat_general(self, user_question: str) -> Dict[str, Any]:
-        """Menangani permintaan umum (non-RAG) yang mungkin termasuk penjadwalan."""
-        prompt = f"{self.system_prompt}\n\nPERTANYAAN USER: {user_question}"
+        """Menangani permintaan umum dengan logika agentic untuk Google Fit dan Kalender."""
+        logger.info(f"🤖 Processing general query: {user_question[:50]}...")
+        
+        context_info = ""
+
+        if any(keyword in user_question.lower() for keyword in ['langkah', 'aktif', 'aktivitas', 'jalan kaki']) and self.fit_tools.service:
+            logger.info("🔍 Intent detected: User is asking about activity. Fetching steps...")
+            steps = self.fit_tools.get_daily_step_count()
+            if steps > 0:
+                context_info = f"\n\nKONTEKS TAMBAHAN: Pengguna sudah berjalan {steps} langkah hari ini."
+                logger.info(f"📈 Steps fetched: {steps}. Adding to context.")
+            else:
+                context_info = "\n\nKONTEKS TAMBAHAN: Data langkah pengguna hari ini masih kosong atau tidak tersedia."
+                
+      
+        prompt = f"{self.system_prompt}{context_info}\n\nPERTANYAAN USER: {user_question}"
         
         response_text = self.rag_system._call_gemini_api(prompt)
         
         calendar_request = self._parse_calendar_request(response_text)
         if calendar_request:
             logger.info(f"✅ Valid calendar JSON found: {calendar_request}")
-            result = self.calendar_tools.create_workout_event(**calendar_request)
+            result = self.calendar_tools.create_workout_event(
+                title=calendar_request.get('title'),
+                date=calendar_request.get('date'),
+                time=calendar_request.get('time'),
+                duration_hours=calendar_request.get('duration', 1),
+                description=calendar_request.get('description', '')
+            )
+            
+            clean_response_text = re.sub(r'\{[\s\S]*\}', '', response_text).strip()
+
             if result.get("success"):
-                final_response = f"{response_text}\n\n---\n\n📅 **Status:** {result.get('message')}"
+                final_response = f"{clean_response_text}\n\n---\n\n📅 **Status:** {result.get('message')}"
                 if result.get("event_link"):
-                    final_response += f"\n🔗 **Link Event:** {result.get('event_link')}"
+                    final_response += f"\n🔗 [Lihat di Google Calendar]({result.get('event_link')})"
                 return {"answer": final_response}
             else:
-                return {"answer": f"{response_text}\n\n---\n\n❌ **Status:** Gagal: {result.get('error')}"}
+                return {"answer": f"{clean_response_text}\n\n---\n\n❌ **Status:** Gagal membuat jadwal: {result.get('error')}"}
 
-        return {"answer": response_text + "\n\n⚠️ DISCLAIMER: Informasi ini bersifat umum. Konsultasikan dengan ahli."}
+        return {"answer": response_text + "\n\n⚠️ **DISCLAIMER:** Informasi ini bersifat umum. Konsultasikan dengan ahli."}
 
 
     def chat_rag(self, user_question: str) -> Dict[str, Any]:
@@ -394,6 +571,50 @@ def auth_status():
     if not fitbot:
         return {"authenticated": False}
     return {"authenticated": fitbot.calendar_tools.service is not None}
+
+@app.get("/authorize-fit")
+def authorize_fit():
+    if not fitbot:
+        raise HTTPException(status_code=500, detail="FitBot not initialized")
+    flow = fitbot.fit_tools.get_flow()
+    authorization_url, state = flow.authorization_url(
+        access_type='offline', 
+        prompt='consent'
+    )
+    return {"authorization_url": authorization_url}
+
+@app.get("/auth/fit/callback")
+def auth_fit_callback(code: str):
+    if not fitbot:
+        raise HTTPException(status_code=500, detail="FitBot not initialized")
+    try:
+        flow = fitbot.fit_tools.get_flow()
+        flow.fetch_token(code=code)
+        
+        with open(fitbot.fit_tools.token_file, 'wb') as token:
+            pickle.dump(flow.credentials, token)
+        
+        fitbot.fit_tools.initialize_service()
+        
+        return RedirectResponse(url="http://localhost:3000?auth_fit=success")
+    except Exception as e:
+        logger.error(f"Fit auth callback error: {e}")
+        return RedirectResponse(url=f"http://localhost:3000?auth_fit=failed&error={str(e)}")
+
+@app.get("/auth/fit/status")
+def auth_fit_status():
+    if not fitbot:
+        return {"authenticated": False}
+    return {"authenticated": fitbot.fit_tools.service is not None}
+
+@app.get("/get-steps")
+def get_steps():
+    if not fitbot or not fitbot.fit_tools.service:
+        raise HTTPException(status_code=403, detail="Google Fit not authenticated.")
+    
+    steps = fitbot.fit_tools.get_daily_step_count()
+    return {"steps": steps}
+
 
 if __name__ == "__main__":
     import uvicorn
