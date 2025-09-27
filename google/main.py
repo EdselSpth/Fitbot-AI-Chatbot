@@ -170,7 +170,7 @@ class FitbotRAGSystem:
         return {"answer": answer, "sources": list(set(sources))}
 
     def _call_gemini_api(self, prompt: str) -> str:
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
         headers = {"Content-Type": "application/json", "x-goog-api-key": self.gemini_api_key}
         data = {"contents": [{"parts": [{"text": prompt}]}]}
         try:
