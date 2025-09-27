@@ -26,11 +26,9 @@ except ImportError:
     print("⚠️ LangChain/FAISS/HuggingFace not installed. Please run: pip install langchain langchain-community langchain-huggingface faiss-cpu pypdf sentence-transformers")
     exit(1)
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# UTILITY FUNCTIONS
 def get_api_key_from_file():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     key_file_path = os.path.join(base_dir, "api_key.txt")
@@ -41,15 +39,12 @@ def get_api_key_from_file():
         print(f"❌ Error reading API key from api_key.txt: {e}")
         return None
 
-# RAG TOOLS CLASS
-# RAG TOOLS CLASS (PERBAIKAN)
-# LangChain imports (tambahkan TextSplitter)
 try:
     from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
     from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
     from langchain.schema import Document
-    from langchain.text_splitter import RecursiveCharacterTextSplitter # <-- TAMBAHKAN IMPORT INI
+    from langchain.text_splitter import RecursiveCharacterTextSplitter 
 except ImportError:
     print("⚠️ LangChain/FAISS/HuggingFace tidak terinstal. Pastikan Anda sudah menjalankan: pip install langchain langchain-community langchain-huggingface faiss-cpu pypdf sentence-transformers")
     exit(1)
@@ -184,7 +179,6 @@ class FitbotRAGSystem:
             logger.error(f"❌ Gemini API error: {e}")
             return f"Error API: {str(e)}"
 
-# GOOGLE CALENDAR TOOLS CLASS
 class GoogleCalendarTools:
     def __init__(self, credentials_file='client_secret.json', token_file='token.pickle'):
         self.SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -194,8 +188,6 @@ class GoogleCalendarTools:
         self.initialize_service()
 
     def get_flow(self):
-        # ... (Kode GoogleCalendarTools kamu tidak berubah, jadi saya persingkat di sini)
-        # Pastikan kode lengkapmu dari file asli ada di sini
         with open(self.credentials_file, 'r') as f:
             client_config = json.load(f)
         if 'web' not in client_config:
@@ -208,7 +200,6 @@ class GoogleCalendarTools:
         )
 
     def initialize_service(self):
-        # ... (Kode lengkapmu dari file asli ada di sini)
         creds = None
         if os.path.exists(self.token_file):
             with open(self.token_file, 'rb') as token:
@@ -255,10 +246,8 @@ class GoogleCalendarTools:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-# GOOGLE FIT TOOLS CLASS (BARU)
 class GoogleFitTools:
     def __init__(self, credentials_file='client_secret.json', token_file='fit_token.pickle'):
-        # Inisialisasi dengan scope khusus untuk membaca data aktivitas Google Fit.
         self.SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read']
         self.credentials_file = credentials_file
         self.token_file = token_file
@@ -267,8 +256,6 @@ class GoogleFitTools:
         self.initialize_service()
 
     def get_flow(self):
-        # Membuat dan mengembalikan instance Flow untuk proses otorisasi OAuth2.
-        # Redirect URI diatur ke endpoint callback khusus untuk Google Fit.
         return Flow.from_client_secrets_file(
             self.credentials_file,
             scopes=self.SCOPES,
@@ -276,7 +263,6 @@ class GoogleFitTools:
         )
 
     def initialize_service(self):
-        # Memuat kredensial dari file jika ada dan menginisialisasi service Google Fit.
         creds = None
         if os.path.exists(self.token_file):
             with open(self.token_file, 'rb') as token:
@@ -308,12 +294,10 @@ class GoogleFitTools:
             self.credentials = None
 
     def get_daily_step_count(self) -> int:
-        # Fungsi untuk mengambil total langkah harian dari Google Fit API.
         if not self.service:
             logger.warning("Google Fit service not available.")
             return 0
 
-        # Menentukan rentang waktu: dari awal hari ini sampai sekarang.
         today = datetime.now().date()
         start_time = datetime.combine(today, datetime.min.time())
         end_time = datetime.now()
@@ -324,14 +308,12 @@ class GoogleFitTools:
         dataset_id = f"{start_time_ns}-{end_time_ns}"
         
         try:
-            # Memanggil API untuk mendapatkan data langkah.
             response = self.service.users().dataSources().datasets().get(
                 userId='me',
                 dataSourceId='derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
                 datasetId=dataset_id
             ).execute()
-            
-            # Mengakumulasi total langkah dari semua data point yang diterima.
+
             steps = 0
             if 'point' in response:
                 for point in response['point']:
@@ -344,10 +326,6 @@ class GoogleFitTools:
             logger.error(f"❌ Could not fetch steps from Google Fit: {e}")
             return 0
 
-# Penambahan fungsi tool untuk Gemini seperti yang diminta.
-# NOTE: Dalam arsitektur saat ini, pemanggilan tool tidak dilakukan secara langsung
-# oleh Gemini, melainkan oleh aplikasi setelah mem-parsing respons.
-# Fungsi ini disediakan untuk mengikuti permintaan dan untuk potensi penggunaan di masa depan.
 def get_daily_step_count(credentials_json: str) -> int:
     """
     Mengambil total langkah harian pengguna dari Google Fit API menggunakan kredensial yang diberikan.
@@ -359,14 +337,11 @@ def get_daily_step_count(credentials_json: str) -> int:
         Jumlah langkah sebagai integer.
     """
     try:
-        # Membangun kredensial dari string JSON
         creds_data = json.loads(credentials_json)
         credentials = Credentials.from_authorized_user_info(creds_data)
 
-        # Membangun layanan Google Fit API
         fit_service = build('fitness', 'v1', credentials=credentials)
 
-        # Menentukan rentang waktu untuk hari ini
         today = datetime.now().date()
         start_time = datetime.combine(today, datetime.min.time())
         end_time = datetime.now()
@@ -374,14 +349,12 @@ def get_daily_step_count(credentials_json: str) -> int:
         end_time_ns = int(end_time.timestamp() * 1e9)
         dataset_id = f"{start_time_ns}-{end_time_ns}"
 
-        # Mengambil data langkah
         response = fit_service.users().dataSources().datasets().get(
             userId='me',
             dataSourceId='derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
             datasetId=dataset_id
         ).execute()
 
-        # Menghitung total langkah
         steps = sum(
             value.get('intVal', 0)
             for point in response.get('point', [])
@@ -392,15 +365,6 @@ def get_daily_step_count(credentials_json: str) -> int:
         print(f"Error getting step count: {e}")
         return 0
 
-# Untuk menambahkan tool ini ke model Gemini (jika menggunakan daftar tools):
-# from google.generativeai.functions import Tool
-# tools = [
-#     Tool(function=get_daily_step_count),
-#     # ... tools lainnya
-# ]
-
-
-# ENHANCED FITBOT CLASS
 class EnhancedFitBot:
     def __init__(self, api_key, credentials_file='client_secret.json'):
         if not api_key:
@@ -410,7 +374,6 @@ class EnhancedFitBot:
         logger.info("🔧 Initializing Google Calendar Tools...")
         self.calendar_tools = GoogleCalendarTools(credentials_file)
 
-        # Tambahan: Inisialisasi Google Fit Tools
         logger.info("🔧 Initializing Google Fit Tools...")
         self.fit_tools = GoogleFitTools(credentials_file)
         
@@ -472,7 +435,6 @@ class EnhancedFitBot:
             return None
         return None
 
-    # Di dalam kelas EnhancedFitBot
 
     def chat_general(self, user_question: str) -> Dict[str, Any]:
         """Menangani permintaan umum dengan logika agentic untuk Google Fit dan Kalender."""
@@ -562,7 +524,6 @@ def handle_chat(req: ChatRequest):
     else:
         return fitbot.chat_general(req.question)
 
-# --- Endpoint Kalender Tetap Ada ---
 @app.get("/auth/login")
 def auth_login():
     if not fitbot:
